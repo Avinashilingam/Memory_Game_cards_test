@@ -54,13 +54,96 @@ public class GameManager : MonoBehaviour
         layoutManager.SetLayout(rows, cols);
 
         // Spawn cards
-        layoutManager.SpawnCards(totalCards);
+        // for (int i = 0; i < cardValues.Count; i++)
+        // {
+        //     GameObject cardObj = Instantiate(cardPrefab, cardParent);
+        //     CardUI card = cardObj.GetComponent<CardUI>();
+        //     card.Initialize(cardValues[i]);
+        //     cardsOnBoard.Add(card);
+        // }
+        for (int i = 0; i < cardValues.Count; i++)
+        {
+            GameObject cardObj = Instantiate(cardPrefab, cardParent);
+            CardUI card = cardObj.GetComponent<CardUI>();
+
+            // Assign shuffled ID
+            card.Initialize(cardValues[i]);
+
+            cardsOnBoard.Add(card);
+
+            Debug.Log("Spawning card with ID: " + cardValues[i]); // Debug check
+        }
 
         score = 0;
         UpdateScore();
+        SaveGame();
     }
 
-  
+    public void SaveGame()
+    {
+        SaveData data = new SaveData();
+        data.score = score;
+        data.rows = rows;
+        data.cols = cols;
+        data.cardIDs = new List<int>(cardValues);
+
+        // Track matched cards (by index)
+        data.matchedIndices = new List<int>();
+        for (int i = 0; i < cardsOnBoard.Count; i++)
+        {
+            if (cardsOnBoard[i] != null && cardsOnBoard[i].IsMatched())
+                data.matchedIndices.Add(i);
+        }
+
+        SaveSystem.SaveGame(data);
+        Debug.Log("Game Saved!");
+    }
+
+    public void LoadGame()
+    {
+        SaveData data = SaveSystem.LoadGame();
+        if (data == null)
+        {
+            GenerateBoard();
+            return;
+        }
+
+        rows = data.rows;
+        cols = data.cols;
+        cardValues = new List<int>(data.cardIDs);
+
+        // Clear old board
+        foreach (Transform child in cardParent)
+        {
+            Destroy(child.gameObject);
+        }
+        cardsOnBoard.Clear();
+
+        // Layout
+        layoutManager.SetLayout(rows, cols);
+
+        // Spawn cards
+        for (int i = 0; i < cardValues.Count; i++)
+        {
+            GameObject cardObj = Instantiate(cardPrefab, cardParent);
+            CardUI card = cardObj.GetComponent<CardUI>();
+            card.Initialize(cardValues[i]);
+
+            // If it was matched before, reveal it immediately
+            if (data.matchedIndices.Contains(i))
+                card.SetMatched();
+
+            cardsOnBoard.Add(card);
+        }
+
+        score = data.score;
+        UpdateScore();
+
+        Debug.Log("Game Loaded!");
+    }
+
+
+
     public void OnCardFlipped(CardUI card)
     {
         if (firstCard == null)
@@ -76,7 +159,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-  
+
     private System.Collections.IEnumerator CheckMatch()
     {
         yield return new WaitForSeconds(0.5f); // small delay to see flip
@@ -93,7 +176,7 @@ public class GameManager : MonoBehaviour
             // Mismatch → flip back
             firstCard.FlipBack();
             secondCard.FlipBack();
-            score -= 2; // penalty (optional)
+            // score -= 2; // penalty (optional)
         }
 
         UpdateScore();

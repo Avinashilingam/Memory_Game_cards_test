@@ -8,8 +8,6 @@ public class LayoutHandler : MonoBehaviour
     public GridLayoutGroup gridLayoutGroup;
     public RectTransform cardParent;
 
-    public GameObject cardPrefab;
-
     private int rows;
     private int columns;
     private float spacing = 10f;
@@ -30,13 +28,5 @@ public class LayoutHandler : MonoBehaviour
 
         gridLayoutGroup.cellSize = new Vector2(cellWidth, cellHeight);
         gridLayoutGroup.spacing = new Vector2(spacing, spacing);
-    }
-
-    public void SpawnCards(int numberOfCards)
-    {
-        for (int i = 0; i < numberOfCards; i++)
-        {
-            Instantiate(cardPrefab, cardParent);
-        }
     }
 }

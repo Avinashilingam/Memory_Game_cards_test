@@ -12,8 +12,8 @@ public class CardUI : MonoBehaviour
 
     [Header("Card Data")]
     public int cardID;         // The value used for matching
-    private bool isFlipped = false;
-    private bool isMatched = false;
+    public bool isFlipped = false;
+    public bool isMatched = false;
 
     private GameManager gameManager;
 
@@ -82,5 +82,10 @@ public class CardUI : MonoBehaviour
         back.SetActive(true);
         front.SetActive(false);
         transform.rotation = Quaternion.identity;
+    }
+
+    public bool IsMatched()
+    {
+        return isMatched;
     }
 }
